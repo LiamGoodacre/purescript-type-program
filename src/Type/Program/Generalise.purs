@@ -120,7 +120,7 @@ instance generaliseLamOther
   --        because we may be removing a binder
   --        alternatively we could make Const
   --        introduce a binder that can't be used
-  => GeneraliseLam i (Lam c)
+  => GeneraliseLam i (Const c)
 
 instance generaliseLam     :: GeneraliseLam b b' => Generalise (Lam b) b'
 instance generaliseVar     :: Generalise (Var n) (Var n)
