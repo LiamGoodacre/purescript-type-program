@@ -116,6 +116,10 @@ instance generaliseLamOther
   -- todo - need to find all free vars in c
   --        if current var isn't mentioned then use Const
   --        otherwise Lam
+  --        also need to rename other free vars
+  --        because we may be removing a binder
+  --        alternatively we could make Const
+  --        introduce a binder that can't be used
   => GeneraliseLam i (Lam c)
 
 instance generaliseLam     :: GeneraliseLam b b' => Generalise (Lam b) b'
