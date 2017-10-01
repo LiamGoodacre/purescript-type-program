@@ -1,9 +1,8 @@
 module Type.Program.Generalise where
 import Type.Program.Lang
-import Type.Utils (class EqNat, class If, Nat, S, Z, kind Nat)
+import Type.Utils (class EqNat, class If, S, Z, kind Nat)
 
 foreign import kind Pairing
-data Pairing (pairing :: Pairing) = Pairing
 foreign import data None :: Pairing
 foreign import data First :: Pairing
 foreign import data Second :: Pairing
@@ -16,17 +15,17 @@ class GetPairing (v :: Nat)
 instance getPairingInstance
   :: ( EqNat v n vn
      , EqNat v (S n) vSn
-     , If vn (Pairing Second) e (Pairing o)
-     , If vSn (Pairing First) (Pairing None) e
+     , If vn @Second e @o
+     , If vSn @First @None e
      )
   => GetPairing v n o
 
 getPairing :: forall v n p.
   GetPairing v n p =>
-  Nat v ->
-  Nat n ->
-  Pairing p
-getPairing _ _ = Pairing
+  @v ->
+  @n ->
+  @p
+getPairing _ _ = @p
 
 
 class SubstitutePairing (p :: Pairing)
@@ -37,11 +36,11 @@ class SubstitutePairing (p :: Pairing)
 
 substitutePairing :: forall p v n o.
   SubstitutePairing p v n o =>
-  Pairing p ->
-  Nat v ->
-  Nat n ->
-  Lang o
-substitutePairing _ _ _ = Lang
+  @p ->
+  @v ->
+  @n ->
+  @o
+substitutePairing _ _ _ = @o
 
 instance substitutePairingNone
   :: SubstitutePairing None v n (Var v)
@@ -60,10 +59,10 @@ class SubstitutePair (lc :: Lang)
 
 substitutePair :: forall lc n out.
   SubstitutePair lc n out =>
-  Lang lc ->
-  Nat n ->
-  Lang out
-substitutePair _ _ = Lang
+  @lc ->
+  @n ->
+  @out
+substitutePair _ _ = @out
 
 instance substitutePairVar
   :: ( GetPairing v n p
@@ -96,9 +95,9 @@ class GeneraliseLam (lc :: Lang)
 
 generalise :: forall lc ccc.
   Generalise lc ccc =>
-  Lang lc ->
-  Lang ccc
-generalise _ = Lang
+  @lc ->
+  @ccc
+generalise _ = @ccc
 
 instance generaliseLamLam
   :: (SubstitutePair b Z b', GeneraliseLam b' c)

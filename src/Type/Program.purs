@@ -12,5 +12,6 @@ import Type.Program.Generalise (class Generalise, generalise)
 program :: forall prog gen out.
   Generalise prog gen =>
   Reflect gen out =>
-  Lang prog -> out
-program _ = reflect (Lang :: Lang gen)
+  @prog -> out
+program _ = reflect @gen
+

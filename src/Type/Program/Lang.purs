@@ -5,8 +5,6 @@ import Type.Utils
 
 foreign import kind Lang
 
-data Lang (lang :: Lang) = Lang
-
 -- lambda core
 foreign import data Lam :: Lang -> Lang
 foreign import data Var :: Nat -> Lang

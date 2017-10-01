@@ -1,7 +1,6 @@
 module Type.Utils where
 
 foreign import kind Bool
-data Bool (bool :: Bool) = Bool
 foreign import data T :: Bool
 foreign import data F :: Bool
 

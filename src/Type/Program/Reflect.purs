@@ -1,7 +1,7 @@
 module Type.Program.Reflect where
 import Type.Program.Lang
 import Data.CCC as C
-import Type.Utils (Nat(..), S, Z, kind Nat)
+import Type.Utils (S, Z, kind Nat)
 
 data TNil = TNil
 data TCons h t = TCons h t
@@ -11,7 +11,7 @@ class Index (env :: Type)
             (out :: Type)
             | nat env -> out
   where
-    index :: env -> Nat nat -> out
+    index :: env -> @nat -> out
 
 instance indexZ ::
   Index (TCons h t) Z h
@@ -22,7 +22,7 @@ instance indexS ::
   Index t n out =>
   Index (TCons h t) (S n) out
   where
-    index (TCons _ t) _ = index t (Nat :: Nat n)
+    index (TCons _ t) _ = index t @n
 
 
 class
@@ -31,7 +31,7 @@ class
               (typ :: Type)
               | lang -> typ
   where
-    reflectLang :: env -> Lang lang -> typ
+    reflectLang :: env -> @lang -> typ
 
 
 instance reflectLangLam
@@ -40,14 +40,14 @@ instance reflectLangLam
   where
     reflectLang env _ =
       \dom -> reflectLang (TCons dom env)
-                          (Lang :: Lang body)
+                          @body
 
 instance reflectLangVar
   :: Index env nat typ
   => ReflectLang env (Var nat) typ
   where
     reflectLang env _ =
-      index env (Nat :: Nat nat)
+      index env @nat
 
 instance reflectLangApp
   :: ( ReflectLang env fn (dom -> cod)
@@ -55,8 +55,8 @@ instance reflectLangApp
   => ReflectLang env (App fn arg) cod
   where
     reflectLang env _ =
-      reflectLang env (Lang :: Lang fn)
-                      (reflectLang env (Lang :: Lang arg))
+      reflectLang env @fn
+                      (reflectLang env @arg)
 
 instance reflectLangCompose
   :: ( C.Semigroupoid k
@@ -64,8 +64,8 @@ instance reflectLangCompose
      , ReflectLang env r (k x y)
      )
   => ReflectLang env (Compose l r) (k x z) where
-    reflectLang env _ = C.compose (reflectLang env (Lang :: Lang l))
-                                  (reflectLang env (Lang :: Lang r))
+    reflectLang env _ = C.compose (reflectLang env @l)
+                                  (reflectLang env @r)
 
 instance reflectLangId
   :: C.Category k
@@ -79,8 +79,8 @@ instance reflectLangFork
      )
   => ReflectLang env (f △ g) (k a (p c d)) where
     reflectLang env _ =
-      C.fork (reflectLang env (Lang :: Lang f))
-             (reflectLang env (Lang :: Lang g))
+      C.fork (reflectLang env @f)
+             (reflectLang env @g)
 
 instance reflectLangIt
   :: C.Terminal k t
@@ -92,7 +92,7 @@ instance reflectLangConst
      , ReflectLang env s a
      )
   => ReflectLang env (Const s) (k b a) where
-    reflectLang env _ = C.constant \_ -> reflectLang env (Lang :: Lang s)
+    reflectLang env _ = C.constant \_ -> reflectLang env @s
 
 instance reflectLangExl
   :: C.Cartesian k p
@@ -114,14 +114,14 @@ instance reflectLangCurry
      , ReflectLang env e (k (p a b) c)
      )
   => ReflectLang env (Curry e) (k a (r b c)) where
-    reflectLang env _ = C.curry (reflectLang env (Lang :: Lang e))
+    reflectLang env _ = C.curry (reflectLang env @e)
 
 instance reflectLangUncurry
   :: ( C.Closed k p r
      , ReflectLang env e (k a (r b c))
      )
   => ReflectLang env (Uncurry e) (k (p a b) c) where
-    reflectLang env _ = C.uncurry (reflectLang env (Lang :: Lang e))
+    reflectLang env _ = C.uncurry (reflectLang env @e)
 
 instance reflectLangNot
   :: C.HeytingCategory k p b
@@ -170,7 +170,7 @@ class
           (typ :: Type)
           | lang -> typ
   where
-    reflect :: Lang lang -> typ
+    reflect :: @lang -> typ
 
 instance reflectInstance
   :: ReflectLang TNil lang typ
@@ -182,26 +182,26 @@ instance reflectInstance
 -- examples
 
 eg0 :: forall k p b. C.HeytingCategory k p b => k b b
-eg0 = reflect (Lang :: Lang (Compose Conj (Id △ Not)))
+eg0 = reflect @(Conj ○ (Id △ Not))
 
 eg0' :: Boolean
 eg0' = eg0 true
 
 eg1 :: forall k a. C.Category k => k a a
-eg1 = reflect (Lang :: Lang (Compose Id Id))
+eg1 = reflect @(Id ○ Id)
 
 eg2 :: forall k p a. C.Cartesian k p => k a (p a a)
-eg2 = reflect (Lang :: Lang (Id △ Id))
+eg2 = reflect @(Id △ Id)
 
 eg3 :: forall k p r a b. C.Closed k p r => k (p a (r a b)) b
-eg3 = reflect (Lang :: Lang (Apply ○ (Exr △ Exl)))
+eg3 = reflect @(Apply ○ (Exr △ Exl))
 
 eg4 :: forall k p r a b. C.Closed k p r => k (p (r a b) a) b
-eg4 = reflect (Lang :: Lang (Apply ○ Id))
+eg4 = reflect @(Apply ○ Id)
 
 eg5 :: forall a b. b -> a -> b
-eg5 = reflect (Lang :: Lang (Lam (Lam (Var (S Z)))))
+eg5 = reflect @(Lam (Lam (Var (S Z))))
 
 eg6 :: forall a b. a -> b -> b
-eg6 = reflect (Lang :: Lang (Lam (Lam (Var Z))))
+eg6 = reflect @(Lam (Lam (Var Z)))
 
